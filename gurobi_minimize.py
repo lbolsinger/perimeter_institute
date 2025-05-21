@@ -17,10 +17,13 @@ p[1, 1, 1] = 0.12/0.6
 
 m = Model("New Model")
 #Q(ab|xa#)
-q = m.addMVar((2, 2, 2, 2), lb=0, ub=1)
+indices = [(a, b, x, a_s) for a in range(2) for b in range(2) for x in range(2) for a_s in range(2)]
+# Define lower and upper bounds per index
+lb_dict = {(a, b, x, a_s): p[a, b, x] if a == a_s else 0 for (a, b, x, a_s) in indices}
+ub_dict = {(a, b, x, a_s): p[a, b, x] if a == a_s else 1 for (a, b, x, a_s) in indices}
 
-# consistency
-m.addConstrs(q[a, b, x, a] == p[a, b, x] for a in range(2) for b in range(2) for x in range(2))
+# Declare the variables with index-specific bounds
+q = m.addVars(indices, lb=lb_dict, ub=ub_dict)
 
 # d-sep
 m.addConstrs(sum(q[a0, b, 1, a_s] for a0 in range(2)) == sum(q[a1, b, 0, a_s] for a1 in range(2)) for b in range(2) for a_s in range(2))
