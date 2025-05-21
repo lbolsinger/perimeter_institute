@@ -1,3 +1,4 @@
+import numpy as np
 from gurobipy import Model, GRB
 
 # P(x=0) = 0.4, P(x=1) = 0.6
@@ -31,3 +32,8 @@ m.addConstrs(sum(q[a, b, x, a_s] for a in range(2) for b in range(2)) == 1 for a
 m.setObjective(sum(q[a, 1, 0, 1] for a in range(2)), GRB.MINIMIZE)
 
 m.optimize()
+
+print(m.objVal)
+
+for (a, b, x, a_s) in np.ndindex(q.x.shape):
+    print(f"P(A={a}, B={b} | X={x}, A#={a_s}) = {float(q.x[a, b, x, a_s]):.2f}")
