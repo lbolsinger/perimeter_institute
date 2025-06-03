@@ -1,0 +1,47 @@
+import pandas as pd
+
+## propensity scores by single characteristic
+
+df = pd.read_csv('clients_with_treatment.csv')
+
+treatment_counts_by_sex = df.groupby(['sex', 'treatment']).size().reset_index(name='count')
+sex_counts = df.groupby('sex').size().reset_index(name='total_count')
+treatment_prob_by_sex = pd.merge(treatment_counts_by_sex, sex_counts, on='sex')
+treatment_prob_by_sex['probability'] = treatment_prob_by_sex['count'] / treatment_prob_by_sex['total_count']
+pivot_treatment_prob_by_sex = treatment_prob_by_sex.pivot(index='treatment', columns='sex', values='probability')
+print("\nProbability of Treatment by Sex (pivoted):")
+display(pivot_treatment_prob_by_sex)
+
+treatment_counts_by_age = df.groupby([df['age'].apply(bucket_age), 'treatment']).size().reset_index(name='count')
+age_counts = df.groupby(df['age'].apply(bucket_age)).size().reset_index(name='total_count')
+treatment_prob_by_age = pd.merge(treatment_counts_by_age, age_counts, on='age')
+treatment_prob_by_age['probability'] = treatment_prob_by_age['count'] / treatment_prob_by_age['total_count']
+pivot_treatment_prob_by_age = treatment_prob_by_age.pivot(index='treatment', columns='age', values='probability')
+print("\nProbability of Treatment by Age Group (pivoted):")
+display(pivot_treatment_prob_by_age)
+
+treatment_counts_by_marital = df.groupby(['marital_status', 'treatment']).size().reset_index(name='count')
+marital_counts = df.groupby('marital_status').size().reset_index(name='total_count')
+treatment_prob_by_marital = pd.merge(treatment_counts_by_marital, marital_counts, on='marital_status')
+treatment_prob_by_marital['probability'] = treatment_prob_by_marital['count'] / treatment_prob_by_marital['total_count']
+pivot_treatment_prob_by_marital = treatment_prob_by_marital.pivot(index='treatment', columns='marital_status', values='probability')
+print("\nProbability of Treatment by Marital Status (pivoted):")
+display(pivot_treatment_prob_by_marital)
+
+treatment_counts_by_accidents = df.groupby(['accidents', 'treatment']).size().reset_index(name='count')
+accidents_counts = df.groupby('accidents').size().reset_index(name='total_count')
+treatment_prob_by_accidents = pd.merge(treatment_counts_by_accidents, accidents_counts, on='accidents')
+treatment_prob_by_accidents['probability'] = treatment_prob_by_accidents['count'] / treatment_prob_by_accidents['total_count']
+pivot_treatment_prob_by_accidents = treatment_prob_by_accidents.pivot(index='treatment', columns='accidents', values='probability')
+print("\nProbability of Treatment by Accidents (pivoted):")
+display(pivot_treatment_prob_by_accidents)
+
+new_column_order = ['treatment', '<20k', '20k-50k', '50k-80k', '80k+']
+treatment_counts_by_income = df.groupby([df['income'].apply(bucket_income), 'treatment']).size().reset_index(name='count')
+income_counts = df.groupby(df['income'].apply(bucket_income)).size().reset_index(name='total_count')
+treatment_prob_by_income = pd.merge(treatment_counts_by_income, income_counts, on='income')
+treatment_prob_by_income['probability'] = treatment_prob_by_income['count'] / treatment_prob_by_income['total_count']
+pivot_treatment_prob_by_income = treatment_prob_by_income.pivot(index='treatment', columns='income', values='probability')
+print("\nProbability of Treatment by Income Bucket (pivoted):")
+pivot_treatment_prob_by_income = pivot_treatment_prob_by_income.reindex(columns=new_column_order)
+display(pivot_treatment_prob_by_income)
