@@ -1,0 +1,26 @@
+import pandas as pd
+
+## P(retention | characteristic, treatment)
+
+df = pd.read_csv('clients_with_treatment.csv')
+display(df.head())
+
+p_r_given_s_t = df.groupby(['sex', 'treatment'])['retained'].mean().reset_index()
+print("Probability of Retention by Sex and Treatment:")
+display(p_r_given_s_t)
+
+p_r_given_a_t = df.groupby(['age', 'treatment'])['retained'].mean().reset_index()
+print("Probability of Retention by Age and Treatment:")
+display(p_r_given_a_t.head()) 
+
+p_r_given_ms_t = df.groupby(['marital_status', 'treatment'])['retained'].mean().reset_index()
+print("\nProbability of Retention by Marital Status and Treatment:")
+display(p_r_given_ms_t)
+
+p_r_given_ac_t = df.groupby(['accidents', 'treatment'])['retained'].mean().reset_index()
+print("\nProbability of Retention by Accidents and Treatment:")
+display(p_r_given_ac_t)
+
+p_r_given_i_t = df.groupby([df['income'].apply(bucket_income), 'treatment'])['retained'].mean().reset_index()
+print("\nProbability of Retention by Income Bucket and Treatment:")
+display(p_r_given_i_t)
