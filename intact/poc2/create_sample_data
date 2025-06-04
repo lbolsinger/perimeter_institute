@@ -1,6 +1,5 @@
 import random
 import math
-import csv
 import statistics
 
 def sigmoid(x):
@@ -10,55 +9,39 @@ def prob_married(age):
     z = -6 + 0.12 * age
     return sigmoid(z)
 
-class Client:
-    def __init__(self, sex, age, marital_status, accidents, income, year):
-        self.sex = sex
-        self.age = age
-        self.marital_status = marital_status
-        self.accidents = accidents
-        self.income = income
-        self.year = year
-        self.score = self.compute_risk_score()
-        self.premium = self.compute_premium()
-        self.treatment = 0  # to be assigned externally
-        self.adjusted_premium = self.premium
-        self.retained = False  # to be assigned externally
+def compute_risk(sex, age, marital_status, accidents, income):
+    score = 0
+    if sex == 'm':
+        score += 0.5
+    if age < 20:
+        score += 1.0
+    elif age < 40:
+        score += 0.5
+    elif age < 60:
+        score += 0.2
+    if marital_status == 'single':
+        score += 0.5
+    if 0 < accidents < 3:
+        score += 1.0
+    elif accidents >= 3:
+        score += 1.5
+    if income < 10000:
+        score += 1.0
+    elif income < 50000:
+        score += 0.5
+    return round(score, 1)
 
-    def compute_risk_score(self):
-        score = 0
-        if self.sex == 'm':
-            score += 0.5
-        if self.age < 20:
-            score += 1.0
-        elif self.age < 40:
-            score += 0.5
-        elif self.age < 60:
-            score += 0.2
-        if self.marital_status == 'single':
-            score += 0.5
-        if 0 < self.accidents < 3:
-            score += 1.0
-        elif self.accidents >= 3:
-            score += 1.5
-        if self.income < 10000:
-            score += 1.0
-        elif self.income < 50000:
-            score += 0.5
-        return round(score, 1)
+## since any clients with the same characteristics have the same score, the would also have the same premium
+def compute_base_premium(score):
+    L = 500
+    k = 0.5
+    x0 = 3
+    lower = 150
+    premium = lower + (L - lower) / (1 + math.exp(-k * (score - x0)))
+    return round(premium, 2)  
 
-    ## since any clients with the same characteristics have the same score, the would also have the same premium
-    def compute_premium(self):
-        L = 500
-        k = 0.5
-        x0 = 3
-        lower = 150
-        premium = lower + (L - lower) / (1 + math.exp(-k * (self.score - x0)))
-        return round(premium, 2)
-
-    def apply_treatment(self, treatment_percent):
-        """Apply % change to premium, e.g., -0.1 for 10% discount"""
-        self.treatment = treatment_percent
-        self.adjusted_premium = round(self.premium * (1 + treatment_percent), 2)
+def update_premium(premium, treatment_percent):
+    return round(premium * (1 + treatment_percent), 2)
 
 ## probability of retention as a sigmoid function ranging from 0 to 1
 ## the input is a linear function of measurable variables + randomness
@@ -68,9 +51,9 @@ def retention_prob(x):
          0.15 * (x[2] - average_age) / std_dev_age + 
          0.1 * (x[3] == 'married') +
          0.2 * (x[4] - average_accidents) / std_dev_accidents +
-         0.2 * (x[5] - average_income) / std_dev_income +
+         0.15 * (x[5] - average_income) / std_dev_income +
          -0.25 * (x[7] - average_premium) / std_dev_premium +
-         -0.05 * x[8])
+         -0.1 * x[8])
     z += random.gauss(0, 0.3)
     return round(sigmoid(z), 3)
 
@@ -118,8 +101,6 @@ for year in years:
         accidents = random.choices([0, 1, 2, 3, 4, 5], weights=[0.5, 0.2, 0.15, 0.1, 0.04, 0.01])[0]
         income = random.randint(10000, 100000)
 
-        client = Client(sex, age, marital_status, accidents, income, year)
-
         features_key = (
             sex,
             bucket_age(age),
@@ -133,12 +114,14 @@ for year in years:
         if key not in treatment_dict:
             treatment_dict[key] = random.choice([-0.1, 0, 0.1, 0.2])
 
-        client.apply_treatment(treatment_dict[key])
+        treatment = treatment_dict[key]
+        risk = compute_risk(sex, age, marital_status, accidents, income)
+        premium = compute_base_premium(risk)
+        new_premium = update_premium(premium, treatment)
 
         clients.append([
             year, sex, age, marital_status, accidents, income,
-            client.score, client.premium, client.treatment, client.adjusted_premium, 
-            0, False
+            risk, premium, treatment,new_premium, 0, False
         ])
 
 average_age = statistics.mean([client[2] for client in clients])
@@ -156,11 +139,3 @@ std_dev_premium = statistics.stdev([client[7] for client in clients])
 for client in clients:
     client[10] = retention_prob(client)
     client[11] = random.random() < client[10]
-
-with open("clients_with_treatment.csv", "w", newline='') as f:
-    writer = csv.writer(f)
-    writer.writerow([
-        "year", "sex", "age", "marital_status", "accidents", "income",
-        "score", "premium", "treatment", "adjusted_premium", "retention_prob", "retained"
-    ])
-    writer.writerows(clients)
