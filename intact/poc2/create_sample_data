@@ -62,7 +62,7 @@ class Client:
 
     def compute_retention_prob(self):
         z = 0.02*(-0.2 * (self.sex == 'm') + 0.3 * self.age + 0.2 * (self.marital_status == 'married') + 
-            0.4 * self.accidents + 0.0008 * self.income - 0.09 * self.premium - 2 * self.treatment)
+            0.4 * self.accidents + 0.0008 * self.income - 0.09 * self.adjusted_premium - 2 * self.treatment)
         z += random.gauss(0, 0.3)
         return min(max(round(sigmoid(z), 3), 0.01),0.99)
 
