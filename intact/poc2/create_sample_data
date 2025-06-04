@@ -1,0 +1,143 @@
+import random
+import math
+import csv
+import matplotlib.pyplot as plt
+import numpy as np
+
+def sigmoid(x):
+    return 1 / (1 + math.exp(-x))
+
+def prob_married(age):
+    z = -6 + 0.12 * age
+    return sigmoid(z)
+
+class Client:
+    def __init__(self, sex, age, marital_status, accidents, income, year):
+        self.sex = sex
+        self.age = age
+        self.marital_status = marital_status
+        self.accidents = accidents
+        self.income = income
+        self.year = year
+        self.score = self.compute_risk_score()
+        self.premium = self.compute_premium()
+        self.treatment = 0  # to be assigned externally
+        self.adjusted_premium = self.premium
+        self.retained = False  # to be assigned externally
+
+    def compute_risk_score(self):
+        score = 0
+        if self.sex == 'm':
+            score += 0.5
+        if self.age < 20:
+            score += 1.0
+        elif self.age < 40:
+            score += 0.5
+        elif self.age < 60:
+            score += 0.2
+        if self.marital_status == 'single':
+            score += 0.5
+        if 0 < self.accidents < 3:
+            score += 1.0
+        elif self.accidents >= 3:
+            score += 1.5
+        if self.income < 10000:
+            score += 1.0
+        elif self.income < 50000:
+            score += 0.5
+        return round(score, 1)
+
+    def compute_premium(self):
+        L = 500
+        k = 0.5
+        x0 = 3
+        lower = 150
+        premium = lower + (L - lower) / (1 + math.exp(-k * (self.score - x0)))
+        return round(premium, 2)
+
+    def apply_treatment(self, treatment_percent):
+        """Apply % change to premium, e.g., -0.1 for 10% discount"""
+        self.treatment = treatment_percent
+        self.adjusted_premium = round(self.premium * (1 + treatment_percent), 2)
+
+    def compute_retention_prob(self):
+        z = 0.02*(-0.2 * (self.sex == 'm') + 0.3 * self.age + 0.2 * (self.marital_status == 'married') + 
+            0.4 * self.accidents + 0.0008 * self.income - 0.09 * self.premium - 2 * self.treatment)
+        z += random.gauss(0, 0.3)
+        return min(max(round(sigmoid(z), 3), 0.01),0.99)
+
+
+def bucket_age(age):
+    if age < 20:
+        return '<20'
+    elif age < 40:
+        return '20-39'
+    elif age < 60:
+        return '40-59'
+    else:
+        return '60+'
+
+def bucket_accidents(acc):
+    if acc == 0:
+        return 0
+    elif acc < 3:
+        return 1
+    else:
+        return 3
+
+def bucket_income(income):
+    if income < 20000:
+        return '<20k'
+    elif income < 50000:
+        return '20k-50k'
+    elif income < 80000:
+        return '50k-80k'
+    else:
+        return '80k+'
+
+random.seed(42)
+clients = []
+n_per_year = 2000
+years = [2020, 2021, 2022, 2023, 2024, 2025]
+
+treatment_dict = {}
+
+for year in years:
+    for _ in range(n_per_year):
+        sex = random.choice(['m', 'f'])
+        age = random.randint(18, 70)
+        marital_status = 'married' if random.random() < prob_married(age) else 'single'
+        accidents = random.choices([0, 1, 2, 3, 4, 5], weights=[0.5, 0.2, 0.15, 0.1, 0.04, 0.01])[0]
+        income = random.randint(10000, 100000)
+
+        client = Client(sex, age, marital_status, accidents, income, year)
+
+        features_key = (
+            sex,
+            bucket_age(age),
+            marital_status,
+            bucket_accidents(accidents),
+            bucket_income(income)
+        )
+        key = (year, features_key)
+
+        if key not in treatment_dict:
+            treatment_dict[key] = random.choice([-0.1, 0, 0.1, 0.2])
+
+        client.apply_treatment(treatment_dict[key])
+        retention = client.compute_retention_prob()
+        client.retained = random.random() < retention
+
+        clients.append([
+            year, sex, age, marital_status, accidents, income,
+            client.score, client.premium, client.treatment, client.adjusted_premium, 
+            retention, client.retained
+        ])
+
+with open("clients_with_treatment.csv", "w", newline='') as f:
+    writer = csv.writer(f)
+    writer.writerow([
+        "year", "sex", "age", "marital_status", "accidents", "income",
+        "score", "premium", "treatment", "adjusted_premium", "retention_prob", "retained"
+    ])
+    writer.writerows(clients)
