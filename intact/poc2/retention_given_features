@@ -68,6 +68,8 @@ def calculate_conditional_retention_probability(df, sex=None, age=None, marital_
     else:
         return filtered_df['retained'].mean()
 
+## probability of retention given feature
+
 retention_by_sex = df.groupby('sex')['retained'].mean()
 print(retention_by_sex, "\n")
 
@@ -89,6 +91,8 @@ accident_bucket_order = ['low', 'medium', 'high']
 retention_by_accidents = retention_by_accidents.reindex(accident_bucket_order)
 print(retention_by_accidents, "\n")
 
+## probability of retention given feature and treatment
+
 pivot_table_sex_treatment = df.pivot_table(values='retained', index='sex', columns='treatment', aggfunc='mean')
 print(pivot_table_sex_treatment, "\n")
 
@@ -100,14 +104,12 @@ print(pivot_table_age_treatment, "\n")
 pivot_table_marital_status_treatment = df.pivot_table(values='retained', index='marital_status', columns='treatment', aggfunc='mean')
 print(pivot_table_marital_status_treatment, "\n")
 
-df['accidents_bucket'] = df['accidents'].apply(bucket_accidents)
-pivot_table_accidents_treatment = df.pivot_table(values='retained', index='accidents_bucket', columns='treatment', aggfunc='mean')
+pivot_table_accidents_treatment = df.pivot_table(values='retained', index=df['accidents'].apply(bucket_accidents), columns='treatment', aggfunc='mean')
 accident_bucket_order = ['low', 'medium', 'high']
 pivot_table_accidents_treatment = pivot_table_accidents_treatment.reindex(accident_bucket_order)
 print(pivot_table_accidents_treatment, "\n")
 
-df['income_bucket'] = df['income'].apply(bucket_income)
-pivot_table_income_treatment = df.pivot_table(values='retained', index='income_bucket', columns='treatment', aggfunc='mean')
+pivot_table_income_treatment = df.pivot_table(values='retained', index=df['income'].apply(bucket_income), columns='treatment', aggfunc='mean')
 income_bucket_order = ['<20k', '20k-50k', '50k-80k', '80k+']
 pivot_table_income_treatment = pivot_table_income_treatment.reindex(income_bucket_order)
 print(pivot_table_income_treatment, "\n")
