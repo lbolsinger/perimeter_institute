@@ -46,6 +46,7 @@ class Client:
             score += 0.5
         return round(score, 1)
 
+    ## since any clients with the same characteristics have the same score, the would also have the same premium
     def compute_premium(self):
         L = 500
         k = 0.5
@@ -59,9 +60,12 @@ class Client:
         self.treatment = treatment_percent
         self.adjusted_premium = round(self.premium * (1 + treatment_percent), 2)
 
+## probability of retention as a sigmoid function ranging from 0 to 1
+## the input is a linear function of measurable variables + randomness
+## "continuous" variables using z-score from mean rather than raw value
 def retention_prob(x):
     z = (0.05 * (x[1] == 'f') +
-         0.15 * (x[2] - average_age) / std_dev_age +
+         0.15 * (x[2] - average_age) / std_dev_age + 
          0.1 * (x[3] == 'married') +
          0.2 * (x[4] - average_accidents) / std_dev_accidents +
          0.2 * (x[5] - average_income) / std_dev_income +
@@ -70,7 +74,7 @@ def retention_prob(x):
     z += random.gauss(0, 0.3)
     return round(sigmoid(z), 3)
 
-
+## some features are generalized into groups/buckets rather than exact values
 def bucket_age(age):
     if age < 20:
         return '<20'
@@ -125,6 +129,7 @@ for year in years:
         )
         key = (year, features_key)
 
+        ## ensures that in a given year, all clients with the same characteristics have the same treatment
         if key not in treatment_dict:
             treatment_dict[key] = random.choice([-0.1, 0, 0.1, 0.2])
 
