@@ -1,0 +1,69 @@
+import pandas as pd
+
+df = pd.read_csv('clients.csv')
+
+def bucket_age(age):
+    if age < 20:
+        return '<20'
+    elif age < 40:
+        return '20-39'
+    elif age < 60:
+        return '40-59'
+    else:
+        return '60+'
+
+def bucket_accidents(acc):
+    if acc == 0:
+        return 0
+    elif acc < 3:
+        return 1
+    else:
+        return 3
+
+def bucket_income(income):
+    if income < 20000:
+        return '<20k'
+    elif income < 50000:
+        return '20k-50k'
+    elif income < 80000:
+        return '50k-80k'
+    else:
+        return '80k+'
+
+
+def calculate_conditional_retention_probability(df, sex=None, age=None, marital_status=None, income=None, accidents=None, treatment=None):
+    """
+    Calculates the conditional probability of retention based on given characteristics and treatment.
+    Uses bucketing internally for age, accidents, and income if provided as raw values.
+
+    Args:
+        df (pd.DataFrame): The DataFrame containing client data.
+        sex (str, optional): The sex of the client ('m' or 'f'). Defaults to None (all sexes).
+        age (int, optional): The age of the client. Will be bucketed internally. Defaults to None.
+        marital_status (str, optional): The marital status ('single' or 'married'). Defaults to None (all statuses).
+        income (int, optional): The income of the client. Will be bucketed internally. Defaults to None.
+        accidents (int, optional): The number of accidents. Will be bucketed internally. Defaults to None.
+        treatment (float, optional): The treatment applied. Defaults to None (all treatments).
+
+    Returns:
+        float: The conditional probability of retention. Returns NaN if no clients match the criteria.
+    """
+    filtered_df = df.copy()
+
+    if sex is not None:
+        filtered_df = filtered_df[filtered_df['sex'] == sex]
+    if age is not None:
+        filtered_df = filtered_df[filtered_df['age'].apply(bucket_age) == bucket_age(age)]
+    if marital_status is not None:
+        filtered_df = filtered_df[filtered_df['marital_status'] == marital_status]
+    if income is not None:
+        filtered_df = filtered_df[filtered_df['income'].apply(bucket_income) == bucket_income(income)]
+    if accidents is not None:
+        filtered_df = filtered_df[filtered_df['accidents'].apply(bucket_accidents) == bucket_accidents(accidents)]
+    if treatment is not None:
+        filtered_df = filtered_df[filtered_df['treatment'] == treatment]
+
+    if filtered_df.empty:
+        return float('nan')
+    else:
+        return filtered_df['retained'].mean()
