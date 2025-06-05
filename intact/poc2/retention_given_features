@@ -68,6 +68,29 @@ def calculate_conditional_retention_probability(df, sex=None, age=None, marital_
     else:
         return filtered_df['retained'].mean()
 
+def count_clients_in_bucket(df, sex=None, age=None, marital_status=None, income=None, accidents=None, treatment=None):
+    """
+    Counts the number of clients in the given bucket.
+
+    Args:
+        df (pd.DataFrame): The DataFrame containing client data.
+    """
+    filtered_df = df.copy()
+    if sex is not None:
+        filtered_df = filtered_df[filtered_df['sex'] == sex]
+    if age is not None:
+        filtered_df = filtered_df[filtered_df['age'].apply(bucket_age) == bucket_age(age)]
+    if marital_status is not None:
+        filtered_df = filtered_df[filtered_df['marital_status'] == marital_status]
+    if income is not None:
+        filtered_df = filtered_df[filtered_df['income'].apply(bucket_income) == bucket_income(income)]
+    if accidents is not None:
+        filtered_df = filtered_df[filtered_df['accidents'].apply(bucket_accidents) == bucket_accidents(accidents)]
+    if treatment is not None:
+        filtered_df = filtered_df[filtered_df['treatment'] == treatment]
+
+    return len(filtered_df)
+
 ## probability of retention given feature
 
 retention_by_sex = df.groupby('sex')['retained'].mean()
@@ -113,3 +136,89 @@ pivot_table_income_treatment = df.pivot_table(values='retained', index=df['incom
 income_bucket_order = ['<20k', '20k-50k', '50k-80k', '80k+']
 pivot_table_income_treatment = pivot_table_income_treatment.reindex(income_bucket_order)
 print(pivot_table_income_treatment, "\n")
+
+## probability of retention given two features and treatment
+
+def generate_two_feature_treatment_pivot_tables(df, features):
+    """
+    Generates and prints pivot tables for every combination of two features
+    from a list, along with the 'treatment' feature.
+
+    Args:
+        df (pd.DataFrame): The DataFrame containing client data.
+        features (list): A list of feature names to create combinations from.
+    """
+    for i in range(len(features)):
+        for j in range(i + 1, len(features)):
+            feature1 = features[i]
+            feature2 = features[j]
+
+            print(f"Conditional Probability of Retention by {feature1}, {feature2}, and Treatment:")
+
+            index_list = []
+            if feature1 == 'age':
+                index_list.append(df['age'].apply(bucket_age))
+            elif feature1 == 'accidents':
+                 index_list.append(df['accidents'].apply(bucket_accidents))
+            elif feature1 == 'income':
+                 index_list.append(df['income'].apply(bucket_income))
+            else:
+                index_list.append(feature1)
+
+            if feature2 == 'age':
+                index_list.append(df['age'].apply(bucket_age))
+            elif feature2 == 'accidents':
+                 index_list.append(df['accidents'].apply(bucket_accidents))
+            elif feature2 == 'income':
+                 index_list.append(df['income'].apply(bucket_income))
+            else:
+                index_list.append(feature2)
+
+            pivot_table = df.pivot_table(
+                values='retained',
+                index=index_list,
+                columns='treatment',
+                aggfunc='mean'
+            )
+
+            if 'age' in [feature1, feature2]:
+                age_bucket_order = ['<20', '20-39', '40-59', '60+']
+                age_level = None
+                for level_name in pivot_table.index.names:
+                    if level_name is not None and ('age' in level_name or level_name == df['age'].apply(bucket_age).name):
+                        if all(item in age_bucket_order for item in pivot_table.index.get_level_values(level_name).unique()):
+                            age_level = level_name
+                            break
+
+                if age_level is not None:
+                    sort_levels = [age_level] + [level for level in pivot_table.index.names if level != age_level]
+                    pivot_table = pivot_table.sort_index(level=sort_levels)
+                    # Reindex the age level to enforce the specific order
+                    pivot_table = pivot_table.reindex(index=age_bucket_order, level=age_level)
+
+
+            display(pivot_table)
+            print("\n" + "="*50 + "\n") 
+
+features = ['sex', 'marital_status', 'age', 'income', 'accidents']
+
+## probability of retention given every combination of features
+
+TREATMENTS = [None, -0.1, 0, 0.1, 0.2]
+SEX = [None, "f", "m"]
+AGE = [None, 0, 20, 40, 60] # instances from each bucket based on premium buckets
+MARITAL_STATUS = [None, "married", "single"]
+INCOME = [None, 0, 20000, 50000, 80000]
+ACCIDENTS = [None, 0, 1, 5]
+
+outcomes = []
+for treatment in TREATMENTS:
+    for sex in SEX:
+        for age in AGE:
+            for marital_status in MARITAL_STATUS:
+                for income in INCOME:
+                    for accidents in ACCIDENTS:
+                        retention = calculate_conditional_retention_probability(df, treatment=treatment, sex=sex, age=age, marital_status=marital_status, income=income, accidents=accidents)
+                        num = count_clients_in_bucket(df, treatment=treatment, sex=sex, age=age, marital_status=marital_status, income=income, accidents=accidents)
+                        outcomes.append([treatment, sex, age, marital_status, income, accidents, retention, num])
+
