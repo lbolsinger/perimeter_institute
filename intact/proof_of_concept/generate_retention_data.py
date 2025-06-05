@@ -25,3 +25,11 @@ for treatment in treatments:
                         retention = calculate_conditional_retention_probability(df, treatment=treatment, sex=sex, age=age, marital_status=marital_status, income=income, accidents=accidents)
                         num = count_clients_in_bucket(df, treatment=treatment, sex=sex, age=age, marital_status=marital_status, income=income, accidents=accidents)
                         outcomes.append([treatment, sex, age, marital_status, income, accidents, retention, num])
+
+with open("retention.csv", "w", newline='') as f:
+    writer = csv.writer(f)
+    writer.writerow([
+        "treatment", "sex", "age", "marital_status", "income",
+        "accidents", "retention", "number_of_clients"
+    ])
+    writer.writerows(outcomes)
