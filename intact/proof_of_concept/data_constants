@@ -1,0 +1,41 @@
+# Constants for data generation
+N_PER_YEAR = 2000
+YEARS = [2020, 2021, 2022, 2023, 2024, 2025]
+
+# Constants for variable values
+SEX_VALUES = ['m', 'f']
+MARITAL_STATUS_VALUES = ['single', 'married']
+ACCIDENT_RANGE = [0, 5]
+ACCIDENT_SDE = 2
+INCOME_RANGE = [10000, 100000]
+INCOME_SDE = 10000
+TREATMENTS = [-0.1, 0, 0.1, 0.2]
+
+# Constants for variable buckets
+AGE_BOUNDS = [20, 40, 60]
+ACCIDENT_BOUNDS = [1, 3]
+ACCIDENT_CATEGORIES = ["low", "medium", "high"]
+INCOME_BOUNDS = [20000, 50000, 80000]
+
+# Constants for risk computation
+RISK_SEX_MALE = 0.5
+RISK_MARITAL_SINGLE = 0.5
+AGE_RISKS = [1.0, 0.5, 0.2, 0.0]
+ACCIDENT_RISKS = [0.0, 1.0, 1.5]
+INCOME_RISKS = [1, 0.5, 1, 1]
+
+# Constants for base premium computation
+PREMIUM_LOWER_BOUND = 150
+PREMIUM_UPPER_BOUND = 500
+PREMIUM_K = 0.5
+PREMIUM_X0 = 3
+
+# Constants for retention probability computation
+RETENTION_SEX_FEMALE_EFFECT = 0.05
+RETENTION_AGE_EFFECT = 0.15
+RETENTION_MARITAL_MARRIED_EFFECT = 0.1
+RETENTION_ACCIDENTS_EFFECT = 0.2
+RETENTION_INCOME_EFFECT = 0.15
+RETENTION_PREMIUM_EFFECT = -0.25
+RETENTION_TREATMENT_EFFECT = -0.1
+RETENTION_RANDOM_STD_DEV = 0.3
