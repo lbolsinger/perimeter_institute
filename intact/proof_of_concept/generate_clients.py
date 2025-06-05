@@ -13,7 +13,7 @@ treatment_dict = {}
 
 for year in constants.YEARS:
     for _ in range(constants.N_PER_YEAR):
-        sex = random.choice(constants.SEXES)
+        sex = random.choice(constants.SEX_VALUES)
         age = random.randint(constants.MIN_AGE, constants.MAX_AGE)
         if random.random() < comp.prob_married(age):
             marital_status = 'married'
