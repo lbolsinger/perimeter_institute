@@ -3,6 +3,8 @@ N_PER_YEAR = 2000
 YEARS = [2020, 2021, 2022, 2023, 2024, 2025]
 
 # Constants for variable values
+MIN_AGE = 16
+MAX_AGE = 80
 SEX_VALUES = ['m', 'f']
 MARITAL_STATUS_VALUES = ['single', 'married']
 ACCIDENT_RANGE = [0, 5]
