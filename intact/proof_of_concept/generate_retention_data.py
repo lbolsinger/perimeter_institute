@@ -1,4 +1,5 @@
 from retention_analysis import calculate_conditional_retention_probability, count_clients_in_bucket
+from characteristics_computations import bucket_age, bucket_income, bucket_accidents
 import constants
 import csv
 
@@ -24,7 +25,7 @@ for treatment in treatments:
                     for accidents in accident_groups:
                         retention = calculate_conditional_retention_probability(df, treatment=treatment, sex=sex, age=age, marital_status=marital_status, income=income, accidents=accidents)
                         num = count_clients_in_bucket(df, treatment=treatment, sex=sex, age=age, marital_status=marital_status, income=income, accidents=accidents)
-                        outcomes.append([treatment, sex, age, marital_status, income, accidents, retention, num])
+                        outcomes.append([treatment, sex, bucket_age(age), marital_status, bucket_income(income), bucket_accidents(accidents), retention, num])
 
 with open("retention.csv", "w", newline='') as f:
     writer = csv.writer(f)
