@@ -1,20 +1,27 @@
 from retention_analysis import calculate_conditional_retention_probability, count_clients_in_bucket
 import constants
+import csv
 
-TREATMENTS = [None, -0.1, 0, 0.1, 0.2]
-SEX = [None, "f", "m"]
-AGE = [None, 0, 20, 40, 60] # instances from each bucket based on premium buckets
-MARITAL_STATUS = [None, "married", "single"]
-INCOME = [None, 0, 20000, 50000, 80000]
-ACCIDENTS = [None, 0, 1, 5]
+treatments = [None] + constants.TREATMENTS
+sexes = [None] + constants.SEX_VALUES
+age_groups = [None, 0]
+for bound in constants.AGE_BOUNDS:
+    age_groups.append(bound)
+marital_groups = [None] + constants.MARITAL_STATUS_VALUES
+income_groups = [None, 0]
+for bound in constants.INCOME_BOUNDS:
+    income_groups.append(bound)
+accident_groups = [None, 0]
+for bound in constants.ACCIDENT_BOUNDS:
+    accident_groups.append(bound)
 
 outcomes = []
-for treatment in TREATMENTS:
-    for sex in SEX:
-        for age in AGE:
-            for marital_status in MARITAL_STATUS:
-                for income in INCOME:
-                    for accidents in ACCIDENTS:
+for treatment in treatments:
+    for sex in sexes:
+        for age in age_groups:
+            for marital_status in marital_groups:
+                for income in income_groups:
+                    for accidents in accident_groups:
                         retention = calculate_conditional_retention_probability(df, treatment=treatment, sex=sex, age=age, marital_status=marital_status, income=income, accidents=accidents)
                         num = count_clients_in_bucket(df, treatment=treatment, sex=sex, age=age, marital_status=marital_status, income=income, accidents=accidents)
                         outcomes.append([treatment, sex, age, marital_status, income, accidents, retention, num])
