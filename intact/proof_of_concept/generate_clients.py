@@ -19,7 +19,7 @@ for year in constants.YEARS:
             marital_status = 'married'
         else:
             marital_status = 'single'
-        accidents = round(random.gauss(stat.mean(constants.ACCIDENT_RANGE), constants.ACCIDENT_SDE))
+        accidents = max(round(random.gauss(stat.mean(constants.ACCIDENT_RANGE), constants.ACCIDENT_SDE)), constants.MIN_ACCIDENTS)
         income = round(random.gauss(stat.mean(constants.INCOME_RANGE), constants.INCOME_SDE))
 
         features_key = (
