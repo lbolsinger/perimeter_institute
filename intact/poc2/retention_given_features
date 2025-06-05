@@ -3,6 +3,8 @@ import pandas as pd
 df = pd.read_csv('clients.csv')
 
 def bucket_age(age):
+    if age is None:
+        return None
     if age < 20:
         return '<20'
     elif age < 40:
@@ -13,6 +15,8 @@ def bucket_age(age):
         return '60+'
 
 def bucket_accidents(acc):
+    if acc is None:
+        return None
     if acc == 0:
         return 'low'
     elif acc < 3:
@@ -21,6 +25,8 @@ def bucket_accidents(acc):
         return 'high'
 
 def bucket_income(income):
+    if income is None:
+        return None
     if income < 20000:
         return '<20k'
     elif income < 50000:
