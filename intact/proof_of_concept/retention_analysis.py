@@ -1,3 +1,5 @@
+import sys
+sys.path.append("def")
 from characteristics_computations import bucket_age, bucket_income, bucket_accidents
 import pandas as pd
 from constants import SUFFICIENT
