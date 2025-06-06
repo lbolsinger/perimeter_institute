@@ -1,4 +1,4 @@
-from definitions.characteristics_computations import bucket_age, bucket_income, bucket_accidents
+from definitions.characteristic_computations import bucket_age, bucket_income, bucket_accidents
 import pandas as pd
 from definitions.constants import SUFFICIENT
 
