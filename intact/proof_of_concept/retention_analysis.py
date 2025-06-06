@@ -132,14 +132,20 @@ def recursive_estimate(client_df, feature_list):
     elif empty_dict(feature_list):
         return 0
     else:
-        num = 0
+        num_total = 0
         weighted_average = 0
         for key in feature_list:
-            new_filter = feature_list.copy()
-            new_filter[key] = None
-            num += count_clients(client_df, new_filter)
-            weighted_average += recursive_estimate(client_df, new_filter)
-        return weighted_average
+            if feature_list[key] is not None:
+                new_filter = feature_list.copy()
+                new_filter[key] = None
+                num_subset = count_clients(client_df, new_filter)
+                if num_subset > 0:
+                    num_total += num_subset
+                    weighted_average += recursive_estimate(client_df, new_filter) * num_subset
+        if num_total > 0:
+          return weighted_average / num_total
+        else:
+          return 0
         
 
 def empty_dict(dict):
