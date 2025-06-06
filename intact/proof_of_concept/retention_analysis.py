@@ -40,7 +40,7 @@ def count_clients_in_bucket(df, sex=None, age=None, marital_status=None, income=
 
     return len(filtered_df)
 
-def estimate_retention_given_client(df, treatment, sex, age, marital_status, income, accidents):
+def retention_given_characteristic_combinations(df, treatment, sex, age, marital_status, income, accidents):
 
     input_values = {
         'treatment': treatment,
@@ -86,13 +86,13 @@ def estimate_retention_given_client(df, treatment, sex, age, marital_status, inc
     return filtered_rows
 
 def filter_insufficient(df, treatment, sex, age, marital_status, income, accidents):
-    result = estimate_retention_given_client(df, treatment, sex, age, marital_status, income, accidents)
+    result = retention_given_characteristic_combinations(df, treatment, sex, age, marital_status, income, accidents)
     for row in result.itertuples():
         if row.number_of_clients < SUFFICIENT:
             result = result.drop(row.Index)
     return result
 
-def filter_nan(df, treatment, sex, age, marital_status, income, accidents):
+def estimate_retention(df, treatment, sex, age, marital_status, income, accidents):
     result = filter_insufficient(df, treatment, sex, age, marital_status, income, accidents)
     vars = []
     for row in result.itertuples():
