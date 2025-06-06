@@ -1,8 +1,6 @@
-import sys
-sys.path.append("def")
-from characteristics_computations import bucket_age, bucket_income, bucket_accidents
+from definitions.characteristics_computations import bucket_age, bucket_income, bucket_accidents
 import pandas as pd
-from constants import SUFFICIENT
+from definitions.constants import SUFFICIENT
 
 def calculate_conditional_retention_probability(df, sex=None, age=None, marital_status=None, income=None, accidents=None, treatment=None):
     filtered_df = df.copy()
