@@ -1,8 +1,8 @@
 import sys
 sys.path.append("def")
 from retention_analysis import calculate_conditional_retention_probability, count_clients_in_bucket
-from characteristics_computations import bucket_age, bucket_income, bucket_accidents
-import constants
+from definitions.characteristics_computations import bucket_age, bucket_income, bucket_accidents
+import definitions.constants as constants
 import csv
 
 treatments = [None] + constants.TREATMENTS
