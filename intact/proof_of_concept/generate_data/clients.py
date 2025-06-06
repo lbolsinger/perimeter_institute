@@ -3,6 +3,8 @@ import math
 import statistics as stat
 import csv
 import numpy as np
+import sys
+sys.path.append("def")
 import constants
 import characteristic_computations as comp
 
