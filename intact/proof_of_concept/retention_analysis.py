@@ -121,4 +121,5 @@ def estimate_retention(df, treatment, sex, age, marital_status, income, accident
             i += 1
         if not dominated:
             vars.append(row_vars)
+            
     return result
