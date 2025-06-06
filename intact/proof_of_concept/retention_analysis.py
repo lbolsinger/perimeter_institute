@@ -148,7 +148,7 @@ def empty_dict(dict):
             return False
     return True
 
-def count_clients(df, feature_list):
+def count_clients(client_df, feature_list):
     return count_clients_in_bucket(client_df,
                                   sex=feature_list['sex'],
                                   age=feature_list['age'],
@@ -157,7 +157,7 @@ def count_clients(df, feature_list):
                                   accidents=feature_list['accidents'],
                                   treatment=feature_list['treatment'])
     
-def conditional_prop_retention(df, feature_list):
+def conditional_prop_retention(client_df, feature_list):
     return calculate_conditional_retention_probability(client_df,
                                                        sex=feature_list['sex'],
                                                        age=feature_list['age'],
