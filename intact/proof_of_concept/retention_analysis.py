@@ -121,3 +121,47 @@ def estimate_retention(df, treatment, sex, age, marital_status, income, accident
             vars.append(row_vars)
             
     return result
+
+def recursive_estimate(client_df, feature_list):
+    '''
+    feature_list = {'sex': (anyof 'm' 'f'), 'age': (Int), ...}
+    '''
+    num = count_clients(client_df, feature_list)
+    if num >= SUFFICIENT:
+        return conditional_prop_retention(client_df, feature_list)
+    elif empty_dict(feature_list):
+        return 0
+    else:
+        num = 0
+        weighted_average = 0
+        for key in feature_list:
+            new_filter = feature_list.copy()
+            new_filter[key] = None
+            num += count_clients(client_df, new_filter)
+            weighted_average += recursive_estimate(client_df, new_filter)
+        return weighted_average
+        
+
+def empty_dict(dict):
+    for key in dict:
+        if dict[key] is not None:
+            return False
+    return True
+
+def count_clients(df, feature_list):
+    return count_clients_in_bucket(client_df,
+                                  sex=feature_list['sex'],
+                                  age=feature_list['age'],
+                                  marital_status=feature_list['marital_status'],
+                                  income=feature_list['income'],
+                                  accidents=feature_list['accidents'],
+                                  treatment=feature_list['treatment'])
+    
+def conditional_prop_retention(df, feature_list):
+    return calculate_conditional_retention_probability(client_df,
+                                                       sex=feature_list['sex'],
+                                                       age=feature_list['age'],
+                                                       marital_status=feature_list['marital_status'],
+                                                       income=feature_list['income'],
+                                                       accidents=feature_list['accidents'],
+                                                       treatment=feature_list['treatment'])
