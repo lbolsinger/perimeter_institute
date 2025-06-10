@@ -124,14 +124,15 @@ def rank_features_for_profile(ret_csv, profile):
     df = pd.read_csv(ret_csv)
     features = {}
     ranking = []
+    feature_list = []
     for feature in profile:
         features[feature] = ['', profile[feature]]
         ranking.append({'feature': feature, 
                         'total_retention': 0,
                         'retention_count': 0,
                         'average_retention': 0})
+        feature_list.append(feature)
     
-    feature_list = list(features.keys())
     list_of_profiles = product(*(features[f] for f in feature_list))
     list_of_dicts = []
 
