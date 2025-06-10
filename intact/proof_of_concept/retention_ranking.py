@@ -181,12 +181,11 @@ def p_ret_given_profile(ret_df, profile):
     df = ret_df.copy()
     for feature in profile:
         df = df[df[feature] == profile[feature]]
-    if df.isempty():
-        return None
+
     return float(df['retention'])
 
 def num_clients_given_profile(ret_df, profile):
     df = ret_df.copy()
     for feature in profile:
         df = df[df[feature] == profile[feature]]
-    return len(df)
+    return int(df['number_of_clients'])
