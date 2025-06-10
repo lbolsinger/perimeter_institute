@@ -62,7 +62,7 @@ def update_premium(premium, treatment_percent):
     '''
     return round(premium * (1 + treatment_percent), 2)
 
-def retention_prob(x):
+def retention_prob(x, average_age, std_dev_age, average_accidents, std_dev_accidents, average_income, std_dev_income, average_premium, std_dev_premium):
     '''
     Computes the retention probability based on the input features
     '''
