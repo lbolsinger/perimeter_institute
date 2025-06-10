@@ -1,4 +1,6 @@
 import csv
+from itertools import product
+import pandas as pd
 
 with open('retention.csv', 'r') as csv_file :
     csv_reader = csv.DictReader(csv_file)
@@ -115,5 +117,72 @@ with open('characteristic_ranking.csv', 'w', newline='') as csv_file :
     csv_writer.writeheader()
     csv_writer.writerows(ranked_data) 
 
-
+def rank_features_for_profile(ret_csv, profile):
+    '''
+    e.g. profile = {'age': '<20', 'sex':'m',...}
+    '''
+    df = pd.read_csv(ret_csv)
+    features = {}
+    ranking = []
+    for feature in profile:
+        features[feature] = ['', profile[feature]]
+        ranking.append({'feature': feature, 
+                        'total_retention': 0,
+                        'retention_count': 0,
+                        'average_retention': 0})
     
+    feature_list = list(features.keys())
+    list_of_profiles = product(*(features[f] for f in feature_list))
+    list_of_dicts = []
+
+    true_retention = p_ret_given_profile(df, profile)
+    num_exact_matches = num_clients_given_profile(df, profile)
+
+    for p in list_of_profiles:
+        for row in df.itertuples():
+            if all(str(p[f]) == str(getattr(row, f)).strip() for f in feature_list):
+                new_dict = included_features_dict(p)
+                new_dict['retention'] = float(getattr(row, 'retention'))
+                new_dict['number_of_clients'] = int(getattr(row, 'number_of_clients'))
+                new_dict['retention_difference'] = abs(new_dict['retention'] - true_retention)
+                list_of_dicts.append(new_dict)
+
+    sorted_data = sorted(list_of_dicts, key=lambda x: x['retention_difference'], reverse=False)
+    sliced_list_of_dicts = sorted_data[:20]
+
+    for dict in sliced_list_of_dicts:
+        for ranking_dict in ranking:
+            if ranking_dict['feature'] not in dict['conditioned_features']:
+                ranking_dict['total_retention'] += dict['retention_difference']
+                ranking_dict['retention_count'] += 1
+    for ranking_dict in ranking:
+        ranking_dict['average_retention'] = ranking_dict['total_retention']/ranking_dict['retention_count'] if ranking_dict['retention_count'] > 0 else 0
+
+    ranked_data = sorted(ranking, key=lambda x: x['average_retention'], reverse = False)
+    return ranked_data
+
+def included_features_dict(profile):
+    list_of_characteristics = []
+    list_of_nones = []
+    nones = 0
+    for key in profile.keys():
+        if profile[key] == '':
+            nones += 1
+            list_of_nones.append(key)
+        else :
+            list_of_characteristics.append(key)
+    return {'conditioned_features': list_of_characteristics, 'removed': nones}
+
+def p_ret_given_profile(ret_df, profile):
+    df = ret_df.copy()
+    for feature in profile:
+        df = df[df[feature] == profile[feature]]
+    if df.isempty():
+        return None
+    return float(df['retention'])
+
+def num_clients_given_profile(ret_df, profile):
+    df = ret_df.copy()
+    for feature in profile:
+        df = df[df[feature] == profile[feature]]
+    return len(df)
