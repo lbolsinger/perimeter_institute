@@ -1,2 +1,0 @@
-from definitions import constants
-from definitions import characteristic_computations
