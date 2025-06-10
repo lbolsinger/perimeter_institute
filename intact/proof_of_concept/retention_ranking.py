@@ -157,7 +157,10 @@ def rank_features_for_profile(ret_csv, profile):
                 ranking_dict['total_retention'] += dict['retention_difference']
                 ranking_dict['retention_count'] += 1
     for ranking_dict in ranking:
-        ranking_dict['average_retention'] = ranking_dict['total_retention']/ranking_dict['retention_count'] if ranking_dict['retention_count'] > 0 else 0
+        if ranking_dict['retention_count'] > 0:
+            ranking_dict['average_retention'] = ranking_dict['total_retention']/ranking_dict['retention_count']
+        else:
+            ranking_dict['average_retention'] = 1
 
     ranked_data = sorted(ranking, key=lambda x: x['average_retention'], reverse = False)
     return ranked_data
